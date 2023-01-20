@@ -1,0 +1,104 @@
+import java.text.SimpleDateFormat
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.0'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://hub.spigotmc.org/nexus/content/repositories/snapshots/')
+    }
+
+    maven {
+        url = uri('https://libraries.minecraft.net/')
+    }
+
+    maven {
+        url = uri('https://repo.codemc.org/repository/maven-public')
+    }
+
+    maven {
+        url = uri('https://repo.xenondevs.xyz/releases/')
+    }
+
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.0'
+    implementation 'net.lingala.zip4j:zip4j:2.11.2'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
+    implementation 'de.studiocode.invui:InvUI:0.10.2'
+    implementation 'de.studiocode.invui:ResourcePack:0.10.2'
+    implementation 'xyz.xenondevs:particle:1.8.3'
+    implementation 'me.xdrop:fuzzywuzzy:1.4.0'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.0'
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
+    compileOnly 'com.mojang:brigadier:1.0.18'
+    compileOnly 'com.mojang:authlib:1.5.21'
+}
+
+group = 'de.studiocode'
+def pluginVersion = '0.16'
+version = pluginVersion
+description = 'MiniatureBlocks'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+ext {
+    shadePath = 'de.studiocode.miniatureblocks.lib'
+}	
+	
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+
+artifacts {
+    archives shadowJar
+}
+
+processResources {
+    filesMatching(['plugin.yml']) {
+        expand version: pluginVersion
+    }
+}
+
+shadowJar {
+    relocate("org.bstats", "${shadePath}.org.bstats")
+    relocate("de.studiocode.invui", "${shadePath}.de.studiocode.invui")
+    relocate("de.studiocode.inventoryaccess", "${shadePath}.de.studiocode.inventoryaccess")
+    relocate("xyz.xenondevs.particle", "${shadePath}.xyz.xenondevs.particle")
+    relocate("kotlin", "${shadePath}.kotlin")
+    relocate("org.intellij.lang.annotations", "${shadePath}.org.intellij.lang.annotations")
+    relocate("org.jetbrains.annotations", "${shadePath}.org.jetbrains.annotations")
+    relocate("org.apache.commons.io", "${shadePath}.org.apache.commons.io")
+    relocate("net.lingala.zip4j", "${shadePath}.net.lingala.zip4j")
+    relocate("me.xdrop", "${shadePath}.me.xdrop")
+	manifest {
+        attributes(
+                'Built-By': System.properties['user.name'],
+                'Version': pluginVersion,
+                'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ").format(new Date()),
+                'Created-By': "Gradle ${gradle.gradleVersion}",
+                'Build-Jdk': "${System.properties['java.version']} " +
+                        "(${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+                'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} " +
+                        "${System.properties['os.version']}"
+        )
+    }
+}
